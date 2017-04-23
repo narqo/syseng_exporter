@@ -33,3 +33,5 @@ The following metrics are exported from the syseng-challenge service:
 - `syseng_up` - indicates whether the last scrap succeeded.
 
 Prometheus is running at http://localhost:9090, open the address in web browser.
+
+[1]: https://github.com/moby/moby/releases/tag/v17.05.0-ce-rc1
