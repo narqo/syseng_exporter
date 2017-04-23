@@ -21,6 +21,8 @@ $ docker-compose -f example/docker-compose.yml -p syseng-challenge up
 The command above builds a Docker image with the syseng-exporter, using provided `Dockerfile`;
 downloads supporting images with syseng-challenge service and Prometheus; and runs everything.
 
+Prometheus is running at http://localhost:9090, open the address in web browser.
+
 The following metrics are exported from the syseng-challenge service:
 
 - `syseng_http_requests_total{code="NNN"}` - shows how often each HTTP status code has been served
@@ -32,6 +34,11 @@ The following metrics are exported from the syseng-challenge service:
   Equivalent to `duration.sum` stat.
 - `syseng_up` - indicates whether the last scrap succeeded.
 
-Prometheus is running at http://localhost:9090, open the address in web browser.
+syseng-challenge also exposes `requestRates` and `duration.average` stats with agregated over time values. 
+They can be calculated using total / summary values and Prometheus query functions, so it's unnessecary .as
+
+For example, `rate(syseng_http_requests_total{code="200"}[1m])` calculates the per-second rate (QPS) for requests with status code 200.
+
+See "[Drop less useful statistics](https://prometheus.io/docs/instrumenting/writing_exporters/#drop-less-useful-statistics)" section from Prometheus own documentation on writing exporters.
 
 [1]: https://github.com/moby/moby/releases/tag/v17.05.0-ce-rc1
