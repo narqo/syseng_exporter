@@ -34,11 +34,14 @@ The following metrics are exported from the syseng-challenge service:
   Equivalent to `duration.sum` stat.
 - `syseng_up` - indicates whether the last scrap succeeded.
 
-syseng-challenge also exposes `requestRates` and `duration.average` stats with agregated over time values. 
-They can be calculated using total / summary values and Prometheus query functions, so it's unnessecary .as
+syseng-challenge exposes `requestRates` and `duration.average` stats with agregated over time values.
+They can be calculated using total / summary values and Prometheus query functions, so it's unnessecary
+to export them.
 
-For example, `rate(syseng_http_requests_total{code="200"}[1m])` calculates the per-second rate (QPS) for requests with status code 200.
+For example, `rate(syseng_http_requests_total{code="200"}[1m])` calculates the per-second rate (QPS)
+for requests with status code 200 over the last 1 minute.
 
-See "[Drop less useful statistics](https://prometheus.io/docs/instrumenting/writing_exporters/#drop-less-useful-statistics)" section from Prometheus own documentation on writing exporters.
+See "[Drop less useful statistics](https://prometheus.io/docs/instrumenting/writing_exporters/#drop-less-useful-statistics)"
+section from Prometheus own documentation on writing exporters.
 
 [1]: https://github.com/moby/moby/releases/tag/v17.05.0-ce-rc1
