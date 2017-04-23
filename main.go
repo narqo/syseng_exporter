@@ -37,7 +37,9 @@ type Exporter struct {
 	reqDuration *prometheus.Desc
 }
 
-func NewSysengExporter(ctx context.Context, namespace, uri string) *Exporter {
+var _ prometheus.Collector = &Exporter{}
+
+func NewSysengExporter(ctx context.Context, namespace, uri string) prometheus.Collector {
 	s := &Exporter{
 		uri: uri,
 		ctx: ctx,
