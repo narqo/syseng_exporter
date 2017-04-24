@@ -35,11 +35,10 @@ The following metrics are exported from the syseng-challenge service:
 - `syseng_up` - indicates whether the last scrap succeeded.
 
 syseng-challenge exposes `requestRates` and `duration.average` stats with agregated over time values.
-They can be calculated using total / summary values and Prometheus query functions, so it's unnessecary
-to export them.
+They can be calculated using total / summary values, so it's unnessecary to export them.
 
-For example, `rate(syseng_http_requests_total{code="200"}[1m])` calculates the per-second rate (QPS)
-for requests with status code 200 over the last 1 minute.
+`rate(syseng_http_requests_total{code="200"}[1m])` calculates the per-second rate (QPS) for requests
+with status code 200 over the last 1 minute.
 
 See "[Drop less useful statistics](https://prometheus.io/docs/instrumenting/writing_exporters/#drop-less-useful-statistics)"
 section from Prometheus own documentation on writing exporters.
@@ -49,26 +48,69 @@ section from Prometheus own documentation on writing exporters.
 > 1. What are good ways of deploying hundreds of instances of our simulated service?
      How would you deploy your exporter? And how would you configure Prometheus to monitor them all?
 
-Docker has [docker-stack](https://docs.docker.com/engine/reference/commandline/stack/) which might be helpful
-for scaling. The exporter could be run as a sidecar container, so each syseng-challege instance is linked
-to the exporter instance in a 1-to-1 way.
+[docker-stack](https://docs.docker.com/engine/reference/commandline/stack/) might be helpful for scaling.
+The exporter could be run as a sidecar container, so each syseng-challege instance is linked to the exporter
+instance in a 1-to-1 fashion.
 
-Solutions like [Nomad](https://www.nomadproject.io) or [Kubernetes](https://kubernetes.io) have concepts
-of groupping for logicaly tied services (syseng-challege and the exporter): the former provides groups,
-while the latter has Pods.
+Some solutions for container orchistration provides the concept of groupping for logicaly tied
+services (syseng-challege and the exporter in our example). For example [Nomad](https://www.nomadproject.io)
+operates with groups, while [Kubernetes](https://kubernetes.io) uses pods.
 
-Prometheus provides mechanisms of doing service discovery (e.g. `*_sd_config`). The chose of the exact
-mechanism depends on the choosen way of scaling.
+Prometheus provides mechanisms of doing service discovery (e.g. `*_sd_config` configuration directive).
+The chose of the exact mechanism depends on the choosen infrastructure.
 
 > 2. What graphs about the service would you plot in a dashboard builder like Grafana?
      Ideally, you can come up with PromQL expressions for them.
 
-TODO
+Per status QPS:
+
+~~~
+rate(syseng_http_requests_total[5m])
+~~~
+
+Average request time:
+
+~~~
+rate(syseng_http_request_duration_seconds_sum[5m]) / rate(syseng_http_request_duration_seconds_count[5m])
+~~~
+
+Per instance SLA via good, e.g. non 5xx, HTTP status codes:
+
+~~~
+sum(rate(syseng_http_requests_total{code!~"^5..$"}[5m])) by (instance)
+/
+sum(rate(syseng_http_requests_total[5m])) by (instance)
+~~~
 
 > 3. What would you alert on? What would be the urgency of the various alerts?
      Again, it would be great if you could formulate alerting conditions with PromQL.
 
-TODO
+Alert if syseng haven't exposed it's stats to the exporter withing last minute. The alert is ugrent,
+as it might mean that a syseng instanse is down.
+
+~~~
+ALERT InstanceDown
+  IF syseng_up == 0
+  FOR 1m
+  LABELS { severity = "urgent" }
+  ANNOTATIONS {
+    summary = "{{ $labels.instance }}: down",
+    description = "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes.",
+  }
+~~~
+
+Alert for high rate of failed requests.
+
+~~~
+ALERT HighErrorRate
+  IF sum(rate(syseng_http_requests_total{code="500"}[5m])) / sum(rate(syseng_http_requests_total[5m])) > 0.01
+  FOR 1m
+  LABELS { severity = "critical" }
+  ANNOTATIONS {
+    summary = "{{ $labels.instance }}: high error rate",
+    description = "{{ $labels.instance }} of job {{ $labels.job }} has high error rate ({{ $value }}).",
+  }
+~~~
 
 > 4. If you were in control of the microservice, which exported metrics would you add or modify next?
 
