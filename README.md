@@ -19,9 +19,9 @@ $ docker-compose -f example/docker-compose.yml -p syseng-challenge up
 ~~~
 
 The command above builds a Docker image with the syseng-exporter, using provided `Dockerfile`;
-downloads supporting images with syseng-challenge service and Prometheus; and runs everything.
+downloads supporting images with syseng-challenge service and Prometheus and runs everything.
 
-Prometheus is running at http://localhost:9090, open the address in web browser.
+Prometheus has been started on http://localhost:9090.
 
 The following metrics are exported from the syseng-challenge service:
 
@@ -52,8 +52,8 @@ section from Prometheus own documentation on writing exporters.
 The exporter could be run as a sidecar container, so each syseng-challege instance is linked to the exporter
 instance in a 1-to-1 fashion.
 
-Some solutions for container orchistration provides the concept of groupping for logicaly tied
-services (syseng-challege and the exporter in our example). For example [Nomad](https://www.nomadproject.io)
+Different solutions for container orchestration provide the concept of grouping for logically tied
+services (syseng-challenge and the exporter in our example). For example [Nomad](https://www.nomadproject.io)
 operates with groups, while [Kubernetes](https://kubernetes.io) uses pods.
 
 Prometheus provides mechanisms of doing service discovery (e.g. `*_sd_config` configuration directive).
@@ -85,8 +85,8 @@ sum(rate(syseng_http_requests_total[5m])) by (instance)
 > 3. What would you alert on? What would be the urgency of the various alerts?
      Again, it would be great if you could formulate alerting conditions with PromQL.
 
-Alert if syseng haven't exposed it's stats to the exporter withing last minute. The alert is ugrent,
-as it might mean that a syseng instanse is down.
+Alert if syseng hasn't exposed it's stats to the exporter withing last minute. The alert is urgent,
+as it might mean that a syseng instance is down.
 
 ~~~
 ALERT InstanceDown
@@ -99,7 +99,7 @@ ALERT InstanceDown
   }
 ~~~
 
-Alert for high rate of failed requests.
+Alert for a high rate of failed requests.
 
 ~~~
 ALERT HighErrorRate
@@ -115,13 +115,13 @@ ALERT HighErrorRate
 > 4. If you were in control of the microservice, which exported metrics would you add or modify next?
 
 As it was said in the original task, it's a good idea to expose metrics in a format that could be directly
-consumed by a metrics aggrerator. This reduces the amount of intermediate componets in the whole system.
+consumed by a metrics aggregator. This reduces the number of intermediate componets in the whole system.
 
 In addition to metrics related to service's business logic, one might want to expose data related
 to specific programming languages, e.g. number of goroutines of GC timmings for Golang, as well
 as system metrics like memory and CPU utilization.
 
-Depening on what exactly the application is doing, it's might be a good idea to provide data related
-to the internals of request processing. Timmings for RPC calls and DB querying are the candidates here.
+Depending on what exactly the application is doing, it might be a good idea to provide data related
+to the internals of request processing. Timings for RPC calls and DB querying are the candidates here.
 
 [1]: https://github.com/moby/moby/releases/tag/v17.05.0-ce-rc1
