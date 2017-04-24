@@ -4,15 +4,15 @@ services:
     image: beorn7/syseng-challenge
     ports:
       - "8080:8080"
+    networks:
+      - examplnet
 
   syseng_exporter:
     build: ..
     image: syseng-exporter
     command: ['/bin/syseng_exporter', '--syseng.stats-uri=http://syseng:8080/stats']
-    expose:
-      - "8081"
-    links:
-      - syseng
+    networks:
+      - examplnet
 
   prometheus:
     image: prom/prometheus
@@ -20,5 +20,8 @@ services:
       - "9090:9090"
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
-    links:
-      - syseng_exporter
+    networks:
+      - examplnet
+
+networks:
+  examplnet:
