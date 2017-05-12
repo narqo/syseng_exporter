@@ -118,6 +118,8 @@ func (e *Exporter) scrapeSvc(v interface{}) error {
 	return json.NewDecoder(resp.Body).Decode(v)
 }
 
+var revision = "dev"
+
 var (
 	addr        = flag.String("addr", ":8081", "listen address")
 	metricsPath = flag.String("metrics-path", "/metrics", "path to expose metrics")
@@ -133,7 +135,7 @@ func main() {
 	http.Handle(*metricsPath, promhttp.Handler())
 	http.HandleFunc("/", handleRoot)
 
-	log.Infoln("Listening on " + *addr)
+	log.Infoln("Version " + revision + " listening on " + *addr)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
 

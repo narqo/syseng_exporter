@@ -1,7 +1,7 @@
 FROM golang:1.8 AS go-builder
 WORKDIR /go/src/syseng_exporter
 COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o syseng_exporter .
+RUN CGO_ENABLED=0 GOOS=linux make GOFLAGS="-a -installsuffix cgo"
 
 FROM alpine:3.3
 RUN apk --no-cache add ca-certificates
