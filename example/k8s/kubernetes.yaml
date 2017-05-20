@@ -11,18 +11,24 @@ spec:
       name: syseng
       labels:
         app: syseng
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: syseng
           image: beorn7/syseng-challenge
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: 8080
         - name: syseng-exporter
           image: varankinv/syseng-exporter
           imagePullPolicy: Always
           command: ["/bin/syseng_exporter", "--syseng.stats-uri=http://localhost:8080/stats"]
           ports:
-            - containerPort: 8081
+            - name: exporter
+              containerPort: 8081
 
 ---
 apiVersion: extensions/v1beta1
@@ -45,12 +51,16 @@ spec:
           ports:
             - containerPort: 9090
           volumeMounts:
-            - mountPath: /etc/prometheus
-              name: prom-config
+            - name: config
+              mountPath: /etc/prometheus
+            - name: data
+              mountPath: /var/lib/prometheus
       volumes:
-        - name: prom-config
+        - name: config
           configMap:
             name: prometheus-yml
+        - name: data
+          emptyDir: {}
 
 ---
 apiVersion: v1
@@ -72,26 +82,45 @@ data:
           - targets: ['localhost:9090']
 
       - job_name: 'syseng-exporter'
-        scheme: https
+        scheme: http
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
           - source_labels: [__meta_kubernetes_pod_name]
             action: replace
-            target_label: kubernetes_pod_name
+            target_label: pod
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: syseng-svc
+  labels:
+    name: syseng
 spec:
   selector:
     app: syseng
   ports:
-    - protocol: TCP
-      port: 9090
-      targetPort: 9090
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: exporter
+      port: 8081
+      protocol: TCP
+      targetPort: exporter
 
 ---
 apiVersion: v1
@@ -102,6 +131,7 @@ spec:
   selector:
     app: prometheus
   ports:
-    - protocol: TCP
-      port: 8080
-      targetPort: 8080
+    - port: 9090
+      protocol: TCP
+      targetPort: 9090
+  type: LoadBalancer

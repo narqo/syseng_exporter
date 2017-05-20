@@ -25,6 +25,19 @@ downloads supporting images with syseng-challenge service and Prometheus and run
 
 Prometheus has been started on http://localhost:9090.
 
+### Using kubernetes
+
+Run
+
+~~~
+$ kubectl apply -f example/k8s/kubernetes.yaml
+~~~
+
+If run locally using [minikube](https://github.com/kubernetes/minikube), run `minikube service prometheus-svc --url`
+to get the URL of running prometheus.
+
+---
+
 The following metrics are exported from the syseng-challenge service:
 
 - `syseng_http_requests_total{code="NNN"}` - shows how often each HTTP status code has been served
