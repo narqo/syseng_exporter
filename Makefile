@@ -1,28 +1,35 @@
-GO ?= go
-DOCKER ?= docker
-
+GO := go
 GOFLAGS :=
-PKG := ./
+
+GIT := git
+DOCKER := docker
+
+GIT_REV := $(shell $(GIT) describe --always --tags --dirty=-dev)
+
+OUTPUT_DIR := $(CURDIR)
 IMAGE_NAME := syseng-exporter
 
-GIT_REV := $(shell git describe --always --tags --dirty=-dev)
+BUILD.go = $(GO) build $(GOFLAGS)
+TEST.go  = $(GO) test $(GOFLAGS)
+
+go_packages := $(shell $(GO) list ./... | grep -v /vendor/)
 
 .PHONY: all
 all: build test
 
 .PHONY: build
 build:
-	$(GO) build $(GOFLAGS) -ldflags "-X main.revision=$(GIT_REV)" -o syseng_exporter $(PKG)
+	$(BUILD.go) -ldflags "-X main.revision=$(GIT_REV)" -o $(OUTPUT_DIR)/syseng_exporter .
 
 .PHONY: build-docker
 build-docker:
-	$(DOCKER) build -t $(IMAGE_NAME) $(PKG)
+	$(DOCKER) build -t $(IMAGE_NAME) .
 
 .PHONY: test
 test:
-	$(GO) test $(GOFLAGS) -v $(PKG)
+	$(TEST.go) -v $(go_packages)
 
 .PHONY: clean
 clean:
-	$(GO) clean $(GOFLAGS) -i $(PKG)
-	$(RM) syseng_exporter
+	$(GO) clean $(GOFLAGS) -i .
+	$(RM) $(OUTPUT_DIR)/syseng_exporter
