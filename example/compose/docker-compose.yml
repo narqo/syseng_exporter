@@ -8,8 +8,8 @@ services:
       - examplnet
 
   syseng_exporter:
-    build: ..
-    image: syseng-exporter
+    build: ../..
+    image: varankinv/syseng-exporter
     command: ['/bin/syseng_exporter', '--syseng.stats-uri=http://syseng:8080/stats']
     networks:
       - examplnet

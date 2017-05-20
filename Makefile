@@ -7,7 +7,7 @@ DOCKER := docker
 GIT_REV := $(shell $(GIT) describe --always --tags --dirty=-dev)
 
 OUTPUT_DIR := $(CURDIR)
-IMAGE_NAME := syseng-exporter
+IMAGE_NAME := varankinv/syseng-exporter
 
 BUILD.go = $(GO) build $(GOFLAGS)
 TEST.go  = $(GO) test $(GOFLAGS)
@@ -28,6 +28,10 @@ build-docker:
 .PHONY: test
 test:
 	$(TEST.go) -v $(go_packages)
+
+.PHONY: vet
+vet:
+	$(GO) vet $(go_packages)
 
 .PHONY: clean
 clean:

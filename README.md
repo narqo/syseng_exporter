@@ -9,13 +9,15 @@ is required to run the example.
 
 ## Running Example
 
+### Using docker-compose
+
 One must to have [Docker](https://docker.com) and [docker-compose](https://docs.docker.com/compose/)
 installed on the development machine.
 
 Run
 
 ~~~
-$ docker-compose -f example/docker-compose.yml -p syseng-challenge up
+$ docker-compose -f example/compose/docker-compose.yml -p syseng-challenge up
 ~~~
 
 The command above builds a Docker image with the syseng-exporter, using provided `Dockerfile`;
