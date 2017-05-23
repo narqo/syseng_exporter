@@ -87,7 +87,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(e.up, prometheus.GaugeValue, 1)
 
 	for code, val := range resp.ReqCounters {
-		ch <- prometheus.MustNewConstMetric(e.reqCount, prometheus.GaugeValue, val, code)
+		ch <- prometheus.MustNewConstMetric(e.reqCount, prometheus.CounterValue, val, code)
 	}
 	ch <- prometheus.MustNewConstSummary(
 		e.reqDuration,
